@@ -1,59 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
 import { Heart, Pause, Play, SkipBack, SkipForward } from 'lucide-react'
-import songSrc from '../assets/song/song.mp3'
 import { SONG_TITLE } from '../constant'
+import { useAudioPlayer } from '../context/AudioContext'
 
 function AudioPlayer() {
-  const audioRef = useRef(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [progress, setProgress] = useState(0)
-
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    const handleTimeUpdate = () => {
-      if (audio.duration) {
-        setProgress((audio.currentTime / audio.duration) * 100)
-      }
-    }
-
-    audio.addEventListener('timeupdate', handleTimeUpdate)
-    return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate)
-    }
-  }, [])
-
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    audio
-      .play()
-      .then(() => setIsPlaying(true))
-      .catch(() => setIsPlaying(false))
-
-    return () => {
-      audio.pause()
-    }
-  }, [])
-
-  const togglePlay = () => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    if (isPlaying) {
-      audio.pause()
-    } else {
-      audio.play()
-    }
-    setIsPlaying((prev) => !prev)
-  }
+  const { isPlaying, progress, toggle } = useAudioPlayer()
 
   return (
     <div className="flex w-full max-w-[90%] flex-col items-center gap-2 px-4">
-      <audio ref={audioRef} src={songSrc} loop preload="auto" />
-
       <p className="font-elegant text-center text-xs text-[#6b5b4d]">
         {SONG_TITLE}
       </p>
@@ -74,7 +27,7 @@ function AudioPlayer() {
 
         <button
           type="button"
-          onClick={togglePlay}
+          onClick={toggle}
           aria-label={isPlaying ? 'Pause song' : 'Play song'}
           className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#c98fae] text-[#8a3b58]"
         >

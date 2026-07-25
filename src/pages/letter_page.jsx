@@ -6,6 +6,7 @@ import flowerImg from '../assets/images/flower.png'
 import { COUPLE_SHORT_NAME } from '../constant'
 import GalleryCarousel from '../components/GalleryCarousel'
 import { useLanguage } from '../context/LanguageContext'
+import { useAudioPlayer } from '../context/AudioContext'
 import { translations } from '../i18n/translations'
 
 function LetterPage() {
@@ -13,13 +14,20 @@ function LetterPage() {
   const t = translations[language]
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { play } = useAudioPlayer()
   const guest = searchParams.get('guest') || t.defaultGuestName
 
-  const openLetter = () =>
+  const openLetter = () => {
+    // Must call play() synchronously inside the tap handler — on iOS Safari,
+    // audio.play() only bypasses the autoplay block when it runs within the
+    // same call stack as the user gesture. Starting it after navigation (in
+    // an effect on the next page) is too late and gets silently blocked.
+    play()
     navigate({
       pathname: '/wedding-rio-and-mey/home',
       search: searchParams.toString(),
     })
+  }
 
   return (
     <div className="lg:flex lg:h-screen">
