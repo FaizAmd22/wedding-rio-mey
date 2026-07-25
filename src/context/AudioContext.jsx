@@ -30,6 +30,13 @@ export function AudioProvider({ children }) {
     audio.addEventListener('timeupdate', handleTimeUpdate)
     audio.addEventListener('play', handlePlay)
     audio.addEventListener('pause', handlePause)
+
+    // Best-effort: on a fresh page load (e.g. a refresh) there's no user
+    // gesture to hang this off of, so browsers usually block it — this
+    // silently no-ops in that case. The floating music button is the real
+    // fallback for resuming after a refresh.
+    audio.play().catch(() => {})
+
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate)
       audio.removeEventListener('play', handlePlay)

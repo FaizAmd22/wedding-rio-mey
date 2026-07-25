@@ -67,7 +67,7 @@ export const translations = {
     formatVenueHours: (start, end) => `${start} - ${end} WIB`,
     openMaps: 'Open Google Maps',
     rsvpTitle: 'RSVP',
-    galleryTitle: 'Galeri',
+    galleryTitle: 'Gallery',
     namePlaceholder: 'Name',
     guestCountPlaceholder: 'Number of guests',
     declineButton: 'Not Attending',

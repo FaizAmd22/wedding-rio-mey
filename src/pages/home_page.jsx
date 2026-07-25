@@ -12,6 +12,7 @@ import CornerFlowers from '../components/CornerFlowers'
 import Countdown from '../components/Countdown'
 import BottomNav from '../components/BottomNav'
 import LanguageToggle from '../components/LanguageToggle'
+import FloatingMusicButton from '../components/FloatingMusicButton'
 import RevealOnScroll from '../components/RevealOnScroll'
 import PageLoader from '../components/PageLoader'
 import GalleryCarousel from '../components/GalleryCarousel'
@@ -104,6 +105,9 @@ function HomePage() {
           </div>
           <div className="contents pointer-events-auto">
             <LanguageToggle />
+          </div>
+          <div className="contents pointer-events-auto">
+            <FloatingMusicButton />
           </div>
         </div>
       </div>

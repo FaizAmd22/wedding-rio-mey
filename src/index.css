@@ -220,18 +220,15 @@ p {
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--primary-color) transparent;
-  border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
-  border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
@@ -241,5 +238,4 @@ p {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: var(--black-color);
-  border-radius: 9999px;
 }

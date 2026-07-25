@@ -68,7 +68,7 @@ function GallerySection() {
             key={src}
             type="button"
             onClick={() => setSelectedImage(src)}
-            className={`h-20 w-20 shrink-0 cursor-pointer rounded-lg border-2 transition-all duration-300 ${isVisible ? 'animate-fade-in' : 'opacity-0'
+            className={`h-20 w-20 shrink-0 cursor-pointer border-2 transition-all duration-300 ${isVisible ? 'animate-fade-in' : 'opacity-0'
               } ${selectedImage === src
                 ? 'scale-105 border-[#c98fae]'
                 : 'border-transparent hover:scale-105'
