@@ -1,4 +1,4 @@
-import flowerImg from '../../assets/images/flower-2.png'
+import flowerImg from '../assets/images/flower-2.png'
 
 function CornerFlowers() {
   return (

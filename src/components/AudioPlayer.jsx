@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Heart, Pause, Play, SkipBack, SkipForward } from 'lucide-react'
-import songSrc from '../../assets/song/song.mp3'
-
-const SONG_TITLE = 'Kita Usahakan Rumah Itu - Sal Priadi'
+import songSrc from '../assets/song/song.mp3'
+import { SONG_TITLE } from '../constant'
 
 function AudioPlayer() {
   const audioRef = useRef(null)
@@ -71,7 +70,7 @@ function AudioPlayer() {
       </div>
 
       <div className="flex items-center gap-4">
-        <SkipBack className="h-4 w-4 text-[#8a7a6d]" aria-hidden="true" />
+        <SkipBack className="h-4 w-4 text-(--black-color)" aria-hidden="true" />
 
         <button
           type="button"
@@ -86,8 +85,8 @@ function AudioPlayer() {
           )}
         </button>
 
-        <SkipForward className="h-4 w-4 text-[#8a7a6d]" aria-hidden="true" />
-        <Heart className="h-4 w-4 text-[#e08bab]" fill="currentColor" aria-hidden="true" />
+        <SkipForward className="h-4 w-4 text-(--black-color)" aria-hidden="true" />
+        <Heart className="h-4 w-4 ml-3 text-(--primary-color)" fill="currentColor" aria-hidden="true" />
       </div>
     </div>
   )

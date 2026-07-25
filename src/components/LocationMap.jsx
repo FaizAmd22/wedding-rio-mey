@@ -1,8 +1,9 @@
 import L from 'leaflet'
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
-import markerPin from '../../assets/images/marker.png'
+import { MapContainer, Marker, TileLayer } from 'react-leaflet'
+import markerPin from '../assets/images/marker.png'
+import { VENUE } from '../constant'
 
-const VENUE_POSITION = [-6.8140374, 108.1947649]
+const VENUE_POSITION = VENUE.coordinates
 
 const venueIcon = L.icon({
   iconUrl: markerPin,
@@ -26,9 +27,15 @@ function LocationMap() {
       // url="http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
       // subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
       />
-      <Marker position={VENUE_POSITION} icon={venueIcon}>
-        <Popup>Cafe Samoja</Popup>
-      </Marker>
+      <Marker
+        position={VENUE_POSITION}
+        icon={venueIcon}
+        eventHandlers={{
+          click: () => {
+            window.open(VENUE.googleMapsUrl, '_blank', 'noopener,noreferrer')
+          },
+        }}
+      />
     </MapContainer>
   )
 }

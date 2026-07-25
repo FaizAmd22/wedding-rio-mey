@@ -1,5 +1,5 @@
 {
-  "name": "wedding-rio",
+  "name": "Sepucuk",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "firebase": "^12.16.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.26.0",
     "react": "^19.2.7",

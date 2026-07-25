@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import LetterIcon from '../icons/letter_icon'
-import LetterActiveIcon from '../icons/letter_active_icon'
-import LoveIcon from '../icons/love_icon'
-import LoveActiveIcon from '../icons/love_active_icon'
-import ImageIcon from '../icons/image_icon'
-import ImageActiveIcon from '../icons/image_active_icon'
-import MapIcon from '../icons/map_icon'
-import MapActiveIcon from '../icons/map_active_icon'
-import GiftActiveIcon from '../icons/gift_active_icon'
-import GiftIcon from '../icons/gift_icon'
+import LetterIcon from './icons/letter_icon'
+import LetterActiveIcon from './icons/letter_active_icon'
+import LoveIcon from './icons/love_icon'
+import LoveActiveIcon from './icons/love_active_icon'
+import ImageIcon from './icons/image_icon'
+import ImageActiveIcon from './icons/image_active_icon'
+import MapIcon from './icons/map_icon'
+import MapActiveIcon from './icons/map_active_icon'
+import GiftActiveIcon from './icons/gift_active_icon'
+import GiftIcon from './icons/gift_icon'
 
 const NAV_ITEMS = [
   { icon: LetterIcon, activeIcon: LetterActiveIcon, label: 'Home', href: '#hero' },
@@ -30,7 +30,12 @@ const NAV_ITEMS = [
     label: 'Location',
     href: '#location',
   },
-  { icon: GiftIcon, activeIcon: GiftActiveIcon, label: 'Gift' },
+  {
+    icon: GiftIcon,
+    activeIcon: GiftActiveIcon,
+    label: 'Gift',
+    href: '#gift',
+  },
 ]
 
 const SECTION_IDS = NAV_ITEMS.filter((item) => item.href).map((item) =>
