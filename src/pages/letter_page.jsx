@@ -48,7 +48,7 @@ function LetterPage() {
           <img
             src={flowerImg}
             alt=""
-            className="animate-fade-in-down pointer-events-none absolute inset-x-0 -top-5 w-full -scale-y-100 select-none"
+            className="animate-fade-in-down pointer-events-none absolute inset-x-0 -top-5 w-full -scale-x-100 -scale-y-100 select-none"
             style={{ animationDuration: '1.2s' }}
           />
           <img
