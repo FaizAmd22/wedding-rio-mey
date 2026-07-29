@@ -94,7 +94,7 @@ function LoveStorySection() {
                     }`}
                   style={{ animationDelay: `${0.2 + index * 0.2}s` }}
                 >
-                  <p className='font-elegant text-xs text-white'>{desc}</p>
+                  <p className='font-elegant text-xs text-white whitespace-pre-line'>{desc}</p>
                   <img
                     src={image}
                     alt={label}
