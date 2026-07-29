@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import bgPhoto from '../../assets/gallery/03.JPG'
 import loveStoryImg from '../../assets/love-story/love-story.png'
-import chapterOneImg from '../../assets/love-story/love-story-1.png'
-import chapterTwoImg from '../../assets/love-story/love-story-2.png'
-import chapterThreeImg from '../../assets/love-story/love-story-3.png'
+import { LOVE_STORY_CHAPTERS } from '../../constant'
 import { useLanguage } from '../../context/LanguageContext'
 import { translations } from '../../i18n/translations'
 
@@ -11,16 +9,10 @@ function LoveStorySection() {
   const { language } = useLanguage()
   const t = translations[language]
 
-  const CHAPTERS = [
-    { label: t.chapterLabels.one, image: chapterOneImg, rotate: 'rotate-3' },
-    {
-      label: t.chapterLabels.two,
-      image: chapterTwoImg,
-      rotate: '-rotate-3',
-      reverse: true,
-    },
-    { label: t.chapterLabels.three, image: chapterThreeImg, rotate: 'rotate-2' },
-  ]
+  const CHAPTERS = LOVE_STORY_CHAPTERS.map((chapter, index) => ({
+    ...chapter,
+    ...t.loveStoryChapters[index],
+  }))
 
   const [showDetail, setShowDetail] = useState(false)
 
@@ -88,22 +80,26 @@ function LoveStorySection() {
           </p>
 
           <div className="flex w-full flex-col gap-12">
-            {CHAPTERS.map(({ label, image, rotate, reverse }, index) => (
-              <div
-                key={label}
-                className={`flex items-center gap-4 animate-fade-in-up ${reverse ? 'flex-row-reverse' : ''
-                  }`}
-                style={{ animationDelay: `${0.2 + index * 0.2}s` }}
-              >
-                <p className="font-elegant flex-1 text-center text-sm text-white">
+            {CHAPTERS.map(({ label, image, rotate, reverse, desc }, index) => (
+              <div key={label} className='flex flex-col gap-4'>
+                <p className="flex-1 font-semibold text-sm text-center text-white">
                   {label}
                 </p>
-                <img
-                  src={image}
-                  alt={label}
-                  className={`w-40 shrink-0 select-none shadow-lg animate-pop-in ${rotate}`}
-                  style={{ animationDelay: `${0.35 + index * 0.2}s` }}
-                />
+
+                <div
+                  key={label}
+                  className={`flex items-center gap-4 animate-fade-in-up ${reverse ? 'flex-row-reverse' : ''
+                    }`}
+                  style={{ animationDelay: `${0.2 + index * 0.2}s` }}
+                >
+                  <p className='font-elegant text-xs text-white'>{desc}</p>
+                  <img
+                    src={image}
+                    alt={label}
+                    className={`w-40 shrink-0 select-none shadow-lg animate-pop-in ${rotate}`}
+                    style={{ animationDelay: `${0.35 + index * 0.2}s` }}
+                  />
+                </div>
               </div>
             ))}
           </div>

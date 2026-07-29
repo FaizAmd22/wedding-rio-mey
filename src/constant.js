@@ -1,5 +1,9 @@
 import groomPhoto from './assets/couple/groom.png'
 import bridePhoto from './assets/couple/bride.png'
+import chapterOneImg from './assets/love-story/chapter-1.png'
+import chapterTwoImg from './assets/love-story/chapter-2.png'
+import chapterThreeImg from './assets/love-story/chapter-3.png'
+import chapterFourImg from './assets/love-story/chapter-4.png'
 
 export const COUPLE = {
     groom: {
@@ -26,7 +30,7 @@ export const WEDDING_DATE_DISPLAY = '12 / 09 / 2026'
 export const EVENT_SCHEDULE = {
     venueHours: { start: '16:00', end: '22:00' },
     akad: '16:00',
-    reception: '18:30',
+    reception: '18:00',
 }
 
 export const VENUE = {
@@ -37,6 +41,13 @@ export const VENUE = {
 }
 
 export const SONG_TITLE = 'Kita Usahakan Rumah Itu - Sal Priadi'
+
+export const LOVE_STORY_CHAPTERS = [
+    { image: chapterOneImg, rotate: 'rotate-3' },
+    { image: chapterTwoImg, rotate: '-rotate-3', reverse: true },
+    { image: chapterThreeImg, rotate: 'rotate-2' },
+    { image: chapterFourImg, rotate: '-rotate-2', reverse: true },
+]
 
 export const GIFTS = [
     {

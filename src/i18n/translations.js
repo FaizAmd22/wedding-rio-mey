@@ -29,7 +29,7 @@ export const translations = {
     giftMessage:
       'Doa restu anda merupakan karunia yang sangat berarti bagi kedua mempelai. Namun jika memberi adalah ungkapan tanda kasih anda, anda dapat menggunakan fitur berikut',
     copySuccess: 'Disalin!',
-    sendGiftTo: 'Kirim Hadiah Untuk',
+    sendGiftTo: 'Wedding Gift 🎁',
     recipientLabel: 'Penerima',
     addressLabel: 'Alamat',
     addressCopied: 'Berhasil Salin Alamat',
@@ -57,6 +57,24 @@ export const translations = {
       two: 'Bab Dua',
       three: 'Bab Tiga',
     },
+    loveStoryChapters: [
+      {
+        label: 'Chapter 1: Dari Teman Sekelas Menjadi Teman Cerita',
+        desc: "Kisah kami dimulai sejak SMA sebagai teman sekelas biasa. Namun, semesta baru mendekatkan kami di tahun 2020 melalui interaksi sederhana saling balas story Instagram antara Jakarta dan Tangerang. Memasuki tahun 2021, hubungan kami tumbuh semakin dekat dan bermakna.Dari sering meluangkan waktu bersama, menemani kesehariannya merintis usaha baru, hingga menjadi tempat bertukar pikiran dan berbagi ide.Di sinilah kami sadar, kami telah berubah dari sekadar teman lama menjadi sepasang hati yang siap saling mendukung.",
+      },
+      {
+        label: 'Chapter 2: Ujian Jarak dan Pendewasaan',
+        desc: 'Tahun 2022 menjadi babak yang paling menguji sekaligus mendewasakan hubungan kami. Jarak sempat membentang ketika ia harus pergi melanjutkan studinya. Menjalani hubungan jarak jauh tidaklah mudah; fase pasang-surut sempat kami lewati dan menguji komitmen kami berdua. ​Namun, jarak justru menyadarkan bahwa kami tidak bisa berjauhan.Kami akhirnya memilih untuk saling menggenggam tangan kembali, pulang pada rumah yang sama dengan hati yang jauh lebih dewasa.',
+      },
+      {
+        label: '​Chapter 3: Satu Arah dan Tujuan',
+        desc: 'Setelah berhasil melewati badai jarak, kami kembali berjalan dengan keyakinan baru. Ujian yang telah terlewati justru membuat ikatan kami semakin kuat dan tak tergoyahkan. ​Di babak ini, kami berkomitmen untuk menyelaraskan langkah, menyatukan visi, dan fokus mempersiapkan masa depan bersama menuju satu tujuan yang pasti.',
+      },
+      {
+        label: 'Chapter 4: Selamanya Dimulai Hari Ini',
+        desc: 'Dari teman sekelas yang sempat teruji oleh jarak, hingga akhirnya kembali dipersatukan oleh komitmen dan tujuan yang sama. Semua lika-liku perjalanan itu telah menuntun kami pada titik terindah ini. ​Di hadapan Tuhan dan orang- orang terkasih, kami siap melangkah bersama sebagai sepasang suami istri, menutup lembaran cerita lama, dan membuka babak baru yang abadi.Terima kasih telah menjadi saksi awal perjalanan selamanya kami.',
+      },
+    ],
   },
   en: {
     mapTitle: 'Time & Location',
@@ -88,7 +106,7 @@ export const translations = {
     giftMessage:
       "Your prayers and blessings mean the world to the couple. However, if you'd like to send a gift as a token of your love, you may use the details below",
     copySuccess: 'Copied!',
-    sendGiftTo: 'Send Gift To',
+    sendGiftTo: 'Wedding Gift 🎁',
     recipientLabel: 'Recipient',
     addressLabel: 'Address',
     addressCopied: 'Address Copied',
@@ -116,5 +134,23 @@ export const translations = {
       two: 'Chapter Two',
       three: 'Chapter Three',
     },
+    loveStoryChapters: [
+      {
+        label: 'Chapter 1: From Classmates to Confidants',
+        desc: "Our story began back in high school as ordinary classmates. But the universe brought us closer in 2020 through something as simple as replying to each other's Instagram stories, between Jakarta and Tangerang. Entering 2021, our relationship grew closer and more meaningful — from spending time together often, being there as she built a new business, to becoming each other's sounding board for ideas. It was here that we realized we had grown from old friends into two hearts ready to support one another.",
+      },
+      {
+        label: 'Chapter 2: The Test of Distance and Growing Up',
+        desc: "2022 became the chapter that tested us the most, yet also matured our relationship the most. Distance stretched between us when she had to leave to continue her studies. A long-distance relationship wasn't easy; we went through our ups and downs, and our commitment to each other was tested. But the distance made us realize we couldn't stay apart. In the end, we chose to hold hands again, coming home to each other with far more mature hearts.",
+      },
+      {
+        label: 'Chapter 3: One Direction, One Goal',
+        desc: 'After weathering the storm of distance, we moved forward again with renewed conviction. The trials we overcame only made our bond stronger and unshakeable. In this chapter, we committed to walking in step with each other, aligning our vision, and focusing on building our future together toward one certain goal.',
+      },
+      {
+        label: 'Chapter 4: Forever Begins Today',
+        desc: 'From classmates tested by distance, to being reunited by shared commitment and purpose — every twist and turn of this journey has led us to this most beautiful moment. Before God and our loved ones, we are ready to walk forward together as husband and wife, closing this chapter of our old story and opening a new, everlasting one. Thank you for witnessing the very beginning of our forever.',
+      },
+    ],
   },
 }
