@@ -87,7 +87,7 @@ function CouplesSection() {
       />
 
       <div
-        className={isVisible ? 'animate-pop-in' : 'opacity-0'}
+        className={`w-[80%] ${isVisible ? 'animate-pop-in' : 'opacity-0'}`}
         style={{ animationDelay: isVisible ? '0.8s' : undefined }}
       >
         <AudioPlayer />
