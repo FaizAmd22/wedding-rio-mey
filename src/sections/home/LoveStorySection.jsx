@@ -82,7 +82,7 @@ function LoveStorySection() {
           <div className="flex w-full flex-col gap-12">
             {CHAPTERS.map(({ label, image, rotate, reverse, desc }, index) => (
               <div key={label} className='flex flex-col gap-4 items-center'>
-                <div className='w-[90%]'>
+                <div className='w-[85%]'>
                   <p className="font-elegant flex-1 font-bold text-sm text-center text-white italic">
                     {label}
                   </p>
