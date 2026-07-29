@@ -6,7 +6,7 @@ function AudioPlayer() {
   const { isPlaying, progress, toggle } = useAudioPlayer()
 
   return (
-    <div className="flex w-full max-w-[90%] flex-col items-center gap-2 px-4">
+    <div className="flex w-full flex-col items-center gap-2 px-2">
       <p className="font-elegant text-center text-xs text-[#6b5b4d]">
         {SONG_TITLE}
       </p>
