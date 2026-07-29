@@ -59,7 +59,7 @@ function GallerySection() {
       </div>
 
       <div
-        className={`custom-scrollbar flex w-full gap-2 overflow-x-auto px-6 pb-2 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'
+        className={`custom-scrollbar flex w-full gap-2 overflow-x-auto px-6 pt-2 pb-2 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'
           }`}
         style={{ animationDelay: isVisible ? '0.4s' : undefined }}
       >
@@ -68,14 +68,14 @@ function GallerySection() {
             key={src}
             type="button"
             onClick={() => setSelectedImage(src)}
-            className={`h-20 w-20 shrink-0 cursor-pointer border-2 transition-all duration-300 ${isVisible ? 'animate-fade-in' : 'opacity-0'
+            className={`h-20 w-20 shrink-0 cursor-pointer border-2 rounded-lg transition-all duration-300 ${isVisible ? 'animate-fade-in' : 'opacity-0'
               } ${selectedImage === src
                 ? 'scale-105 border-[#c98fae]'
                 : 'border-transparent hover:scale-105'
               }`}
             style={{ animationDelay: isVisible ? `${0.5 + index * 0.06}s` : undefined }}
           >
-            <img src={src} alt="" className="h-full w-full object-cover" />
+            <img src={src} alt="" className="h-full w-full object-cover rounded-lg" />
           </button>
         ))}
       </div>
