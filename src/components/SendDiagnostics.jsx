@@ -36,7 +36,7 @@ function SendDiagnostics({ message, sendTarget }) {
   // tidak pernah lolos inspectNonAscii, jadi dihitung terpisah di sini.
   const questionMarks = (message.match(/\?/g) ?? []).length
   const brokenCount = replacementCount + questionMarks
-  const sampleUrl = buildWhatsAppLink('081234567890', message, sendTarget)
+  const sampleUrl = buildWhatsAppLink('082228152950', message, sendTarget)
 
   const report = [
     'DIAGNOSTIK KIRIM UNDANGAN',
@@ -45,14 +45,14 @@ function SendDiagnostics({ message, sendTarget }) {
     'User agent : ' + navigator.userAgent,
     'Mode kirim : ' + sendTarget,
     'Template   : ' +
-      message.length +
-      ' karakter, ' +
-      replacementCount +
-      ' U+FFFD, ' +
-      questionMarks +
-      ' tanda tanya',
+    message.length +
+    ' karakter, ' +
+    replacementCount +
+    ' U+FFFD, ' +
+    questionMarks +
+    ' tanda tanya',
     'Non-ASCII  : ' +
-      chars.map((c) => c.char + ' ' + c.code + ' x' + c.count).join(' | '),
+    chars.map((c) => c.char + ' ' + c.code + ' x' + c.count).join(' | '),
     'Clipboard  : ' + (clipboardResult || 'belum diuji'),
     'Contoh URL : ' + sampleUrl,
   ].join('\n')
