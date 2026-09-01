@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { COUPLE_SHORT_NAME } from '../constant'
 
-const galleryModules = import.meta.glob('../assets/gallery/*.JPG', {
+const galleryModules = import.meta.glob('../assets/gallery/*.webp', {
   eager: true,
   import: 'default',
 })
@@ -25,7 +25,7 @@ function GalleryCarousel() {
   return (
     <div className="relative h-full w-full overflow-hidden bg-black">
       {galleryImages.map((src, i) => (
-        <img
+        <img loading="lazy" decoding="async"
           key={src}
           src={src}
           alt=""

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
-import bgPhoto from '../../assets/images/bg-rsvp.png'
+import bgPhoto from '../../assets/images/bg-rsvp.webp'
 import { useLanguage } from '../../context/LanguageContext'
 import { translations } from '../../i18n/translations'
 import { COUPLE_SHORT_NAME } from '../../constant'

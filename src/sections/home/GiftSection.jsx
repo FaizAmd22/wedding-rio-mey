@@ -104,7 +104,7 @@ function GiftSection() {
         {t.giftTitle}
       </p>
 
-      <img
+      <img loading="lazy" decoding="async"
         src={giftImg}
         alt={t.giftTitle}
         className={`w-32 select-none ${isVisible ? 'animate-pop-in' : 'opacity-0'}`}

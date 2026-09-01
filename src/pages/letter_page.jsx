@@ -1,8 +1,8 @@
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import bgImg from '../assets/images/bg.png'
-import bgLetterImg from '../assets/images/bg-letter.png'
-import letterImg from '../assets/images/letter.png'
-import flowerImg from '../assets/images/flower.png'
+import bgImg from '../assets/images/bg.webp'
+import bgLetterImg from '../assets/images/bg-letter.webp'
+import letterImg from '../assets/images/letter.webp'
+import flowerImg from '../assets/images/flower.webp'
 import { COUPLE_SHORT_NAME } from '../constant'
 import GalleryCarousel from '../components/GalleryCarousel'
 import { useLanguage } from '../context/LanguageContext'
@@ -45,13 +45,13 @@ function LetterPage() {
           className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-cover bg-center px-2 py-12 lg:h-screen lg:min-h-0"
           style={{ backgroundImage: `url(${bgImg})` }}
         >
-          <img
+          <img decoding="async"
             src={flowerImg}
             alt=""
             className="animate-fade-in-down pointer-events-none absolute inset-x-0 -top-5 w-full -scale-x-100 -scale-y-100 select-none"
             style={{ animationDuration: '1.2s' }}
           />
-          <img
+          <img decoding="async"
             src={flowerImg}
             alt=""
             className="animate-fade-in-up pointer-events-none absolute inset-x-0 -bottom-5 w-full select-none"
@@ -121,7 +121,7 @@ function LetterPage() {
                 style={{ animationDelay: '2.3s' }}
                 aria-label={t.openLetterButton}
               >
-                <img
+                <img decoding="async"
                   src={letterImg}
                   alt={t.letterEnvelopeAlt}
                   className="animate-float w-35"

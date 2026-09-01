@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import bgPhoto from '../../assets/gallery/03.JPG'
-import loveStoryImg from '../../assets/love-story/love-story.png'
+import bgPhoto from '../../assets/gallery/03.webp'
+import loveStoryImg from '../../assets/love-story/love-story.webp'
 import { LOVE_STORY_CHAPTERS } from '../../constant'
 import { useLanguage } from '../../context/LanguageContext'
 import { translations } from '../../i18n/translations'
@@ -52,7 +52,7 @@ function LoveStorySection() {
         className={`w-full px-3 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}
       >
         <div className="relative w-full">
-          <img
+          <img loading="lazy" decoding="async"
             src={loveStoryImg}
             alt={t.ourLoveStoryTitle}
             className="w-full select-none"
@@ -95,7 +95,7 @@ function LoveStorySection() {
                   style={{ animationDelay: `${0.2 + index * 0.2}s` }}
                 >
                   <p className='font-elegant text-xs text-white whitespace-pre-line'>{desc}</p>
-                  <img
+                  <img loading="lazy" decoding="async"
                     src={image}
                     alt={label}
                     className={`w-40 shrink-0 select-none shadow-lg animate-pop-in ${rotate}`}

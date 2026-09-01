@@ -20,7 +20,7 @@ function CoupleCard({ image, name, fatherLine, motherLine, reverse, isVisible, d
         <p className="font-elegant text-xs text-[#6b5b4d]">{fatherLine}</p>
         <p className="font-elegant text-xs text-[#6b5b4d]">{motherLine}</p>
       </div>
-      <img
+      <img loading="lazy" decoding="async"
         src={image}
         alt={name}
         className={`w-28 shrink-0 select-none sm:w-32 ${isVisible ? 'animate-pop-in' : 'opacity-0'
@@ -73,7 +73,7 @@ function CouplesSection() {
           className={`w-53 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}
           style={{ animationDelay: isVisible ? '0.2s' : undefined }}
         >
-          <img src={loveLineImg} alt="loveLine" className="w-full object-cover" />
+          <img loading="lazy" decoding="async" src={loveLineImg} alt="loveLine" className="w-full object-cover" />
         </div>
       </div>
 

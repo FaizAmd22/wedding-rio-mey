@@ -1,9 +1,9 @@
-import groomPhoto from './assets/couple/groom.png'
-import bridePhoto from './assets/couple/bride.png'
-import chapterOneImg from './assets/love-story/chapter-1.png'
-import chapterTwoImg from './assets/love-story/chapter-2.png'
-import chapterThreeImg from './assets/love-story/chapter-3.png'
-import chapterFourImg from './assets/love-story/chapter-4.png'
+import groomPhoto from './assets/couple/groom.webp'
+import bridePhoto from './assets/couple/bride.webp'
+import chapterOneImg from './assets/love-story/chapter-1.webp'
+import chapterTwoImg from './assets/love-story/chapter-2.webp'
+import chapterThreeImg from './assets/love-story/chapter-3.webp'
+import chapterFourImg from './assets/love-story/chapter-4.webp'
 
 export const COUPLE = {
     groom: {

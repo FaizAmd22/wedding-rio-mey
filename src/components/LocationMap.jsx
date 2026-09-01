@@ -1,6 +1,8 @@
 import L from 'leaflet'
+// CSS-nya ikut chunk ini, bukan bundle global.
+import 'leaflet/dist/leaflet.css'
 import { MapContainer, Marker, TileLayer } from 'react-leaflet'
-import markerPin from '../assets/images/marker.png'
+import markerPin from '../assets/images/marker.webp'
 import { VENUE } from '../constant'
 
 const VENUE_POSITION = VENUE.coordinates

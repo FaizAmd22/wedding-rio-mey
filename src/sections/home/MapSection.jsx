@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { BookOpen, Clock, HeartHandshake, MapPin } from 'lucide-react'
-import LocationMap from '../../components/LocationMap'
 import { useLanguage } from '../../context/LanguageContext'
 import { translations } from '../../i18n/translations'
 import { EVENT_SCHEDULE, VENUE } from '../../constant'
+
+// Leaflet berat dan hanya dipakai di sini. Diambil setelah bagian peta
+// benar-benar masuk layar, bukan saat halaman pertama dimuat.
+const LocationMap = lazy(() => import('../../components/LocationMap'))
 
 const ROWS = [
   { icon: Clock, labelKey: 'time' },
@@ -162,7 +165,11 @@ function MapSection() {
           }`}
         style={{ animationDelay: isVisible ? '1s' : undefined }}
       >
-        <LocationMap />
+        {isVisible && (
+          <Suspense fallback={<div className="h-full w-full bg-[#efe7dc]" />}>
+            <LocationMap />
+          </Suspense>
+        )}
       </div>
 
       <a

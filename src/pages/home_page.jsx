@@ -1,4 +1,4 @@
-import bgImg from '../assets/images/bg.png'
+import bgImg from '../assets/images/bg.webp'
 import HeroSection from '../sections/home/HeroSection'
 import SummarySection from '../sections/home/SummarySection'
 import MapSection from '../sections/home/MapSection'

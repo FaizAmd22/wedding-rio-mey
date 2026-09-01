@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import { translations } from '../../i18n/translations'
 
-const galleryModules = import.meta.glob('../../assets/gallery/*.JPG', {
+const galleryModules = import.meta.glob('../../assets/gallery/*.webp', {
   eager: true,
   import: 'default',
 })
@@ -50,7 +50,7 @@ function GallerySection() {
         className={`w-full px-6 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`}
         style={{ animationDelay: isVisible ? '0.2s' : undefined }}
       >
-        <img
+        <img loading="lazy" decoding="async"
           key={selectedImage}
           src={selectedImage}
           alt="Rio & Mey"
@@ -75,7 +75,7 @@ function GallerySection() {
               }`}
             style={{ animationDelay: isVisible ? `${0.5 + index * 0.06}s` : undefined }}
           >
-            <img src={src} alt="" className="h-full w-full object-cover rounded-lg" />
+            <img loading="lazy" decoding="async" src={src} alt="" className="h-full w-full object-cover rounded-lg" />
           </button>
         ))}
       </div>

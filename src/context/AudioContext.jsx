@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import songSrc from '../assets/song/song.mp3'
+import songSrc from '../assets/song/song.m4a'
 
 const AudioContext = createContext(null)
 
@@ -11,7 +11,7 @@ export function AudioProvider({ children }) {
   if (!audioRef.current && typeof window !== 'undefined') {
     const audio = new Audio(songSrc)
     audio.loop = true
-    audio.preload = 'auto'
+    audio.preload = 'metadata'
     audioRef.current = audio
   }
 

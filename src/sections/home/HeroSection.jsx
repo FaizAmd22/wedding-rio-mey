@@ -1,4 +1,4 @@
-import letterImg from '../../assets/images/letter-2.png'
+import letterImg from '../../assets/images/letter-2.webp'
 import { COUPLE, WEDDING_DATE_DISPLAY } from '../../constant'
 import { useLanguage } from '../../context/LanguageContext'
 import { translations } from '../../i18n/translations'
@@ -10,7 +10,7 @@ function HeroSection() {
   return (
     <section id="hero" className="relative flex flex-col items-center px-4 pt-16">
       <div className="relative w-full">
-        <img
+        <img decoding="async"
           src={letterImg}
           alt={t.saveTheDateAlt}
           className="w-full select-none animate-fade-in-down"
