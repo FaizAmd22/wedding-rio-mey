@@ -18,14 +18,19 @@ export function isMobileDevice() {
  * - 'app'       wa.me, membuka aplikasi WhatsApp bila terpasang. Cocok di HP.
  * - 'web'       WhatsApp Web di browser, melewati serah-terima Windows.
  * - 'clipboard' Chat dibuka tanpa teks apa pun di URL; pesan lewat clipboard.
- *               Tidak ada karakter non-ASCII di URL, jadi tidak ada yang bisa
- *               dirusak. Ini yang paling andal.
+ *               Karena URL-nya hanya berisi nomor, tidak ada teks yang bisa
+ *               dirusak — jadi wa.me aman dipakai di HP untuk membuka
+ *               aplikasi langsung ke nomor tujuan. Ini mode paling andal.
  */
 export function buildWhatsAppLink(phone, message, target = 'app') {
   const number = normalizePhone(phone)
 
   if (target === 'clipboard') {
-    return `https://web.whatsapp.com/send?phone=${number}`
+    // Di HP, wa.me membuka aplikasi langsung ke chat nomor tujuan. Di desktop,
+    // web.whatsapp.com menghindari halaman perantara "Continue to Chat".
+    return isMobileDevice()
+      ? `https://wa.me/${number}`
+      : `https://web.whatsapp.com/send?phone=${number}`
   }
 
   const text = encodeURIComponent(message)

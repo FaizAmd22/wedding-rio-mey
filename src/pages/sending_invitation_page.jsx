@@ -19,6 +19,7 @@ import PasswordGate from '../components/PasswordGate'
 const TEMPLATE_DOC = { collection: 'settings', id: 'messageTemplate' }
 
 const SEND_TARGET_KEY = 'wedding-rio:send-target'
+const IS_MOBILE = isMobileDevice()
 
 function loadSendTarget() {
   try {
@@ -27,7 +28,7 @@ function loadSendTarget() {
   } catch {
     // localStorage bisa diblokir; pakai default saja
   }
-  return isMobileDevice() ? 'app' : 'clipboard'
+  return 'clipboard'
 }
 
 function saveSendTarget(target) {
@@ -94,10 +95,24 @@ function buildPersonalizedMessage(message, contact) {
 function copyTextSync(text) {
   const area = document.createElement('textarea')
   area.value = text
+  area.readOnly = true
+  area.contentEditable = 'true'
   area.style.position = 'fixed'
+  area.style.top = '0'
   area.style.opacity = '0'
   document.body.appendChild(area)
-  area.select()
+
+  if (IS_MOBILE) {
+    const range = document.createRange()
+    range.selectNodeContents(area)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+    area.setSelectionRange(0, text.length)
+  } else {
+    area.select()
+  }
+
   let copied = false
   try {
     copied = document.execCommand('copy')
@@ -814,7 +829,9 @@ function GuestManager() {
           />
           <p className="mt-1 text-xs text-gray-400">
             {sendTarget === 'clipboard' &&
-              'Paling aman. Pesan otomatis tersalin, chat terbuka kosong — tinggal tekan Ctrl+V lalu Enter.'}
+              (IS_MOBILE
+                ? 'Paling aman. Pesan otomatis tersalin dan aplikasi WhatsApp terbuka ke nomor tujuan — tahan kolom ketik lalu Paste.'
+                : 'Paling aman. Pesan otomatis tersalin, chat terbuka kosong — tinggal tekan Ctrl+V lalu Enter.')}
             {sendTarget === 'web' &&
               'Pesan langsung terisi. Pastikan sudah login di web.whatsapp.com.'}
             {sendTarget === 'app' &&
