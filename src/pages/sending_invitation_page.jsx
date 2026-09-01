@@ -23,11 +23,11 @@ const SEND_TARGET_KEY = 'wedding-rio:send-target'
 function loadSendTarget() {
   try {
     const stored = localStorage.getItem(SEND_TARGET_KEY)
-    if (stored === 'web' || stored === 'app') return stored
+    if (stored === 'web' || stored === 'app' || stored === 'clipboard') return stored
   } catch {
     // localStorage bisa diblokir; pakai default saja
   }
-  return isMobileDevice() ? 'app' : 'web'
+  return isMobileDevice() ? 'app' : 'clipboard'
 }
 
 function saveSendTarget(target) {
@@ -87,21 +87,34 @@ function buildPersonalizedMessage(message, contact) {
     .replaceAll('{link}', buildInvitationLink(contact.name))
 }
 
+/**
+ * Sinkron, supaya aman dipanggil tepat sebelum window.open: navigator.clipboard
+ * bersifat async dan menolak menulis begitu tab kehilangan fokus ke tab baru.
+ */
+function copyTextSync(text) {
+  const area = document.createElement('textarea')
+  area.value = text
+  area.style.position = 'fixed'
+  area.style.opacity = '0'
+  document.body.appendChild(area)
+  area.select()
+  let copied = false
+  try {
+    copied = document.execCommand('copy')
+  } catch {
+    copied = false
+  }
+  document.body.removeChild(area)
+  return copied
+}
+
 async function copyMessage(message, contact) {
   const text = buildPersonalizedMessage(message, contact)
   try {
     await navigator.clipboard.writeText(text)
     return true
   } catch {
-    const area = document.createElement('textarea')
-    area.value = text
-    area.style.position = 'fixed'
-    area.style.opacity = '0'
-    document.body.appendChild(area)
-    area.select()
-    const ok = document.execCommand('copy')
-    document.body.removeChild(area)
-    return ok
+    return copyTextSync(text)
   }
 }
 
@@ -326,6 +339,7 @@ function ContactRow({
 
   const handleSend = () => {
     const personalized = buildPersonalizedMessage(message, contact)
+    if (sendTarget === 'clipboard') copyTextSync(personalized)
     window.open(
       buildWhatsAppLink(contact.phone, personalized, sendTarget),
       '_blank',
@@ -449,6 +463,7 @@ function BroadcastPanel({ queue, index, message, sendTarget, onSent, onSkip, onC
 
   const handleSend = () => {
     const personalized = buildPersonalizedMessage(message, current)
+    if (sendTarget === 'clipboard') copyTextSync(personalized)
     window.open(
       buildWhatsAppLink(current.phone, personalized, sendTarget),
       '_blank',
@@ -792,14 +807,18 @@ function GuestManager() {
             value={sendTarget}
             onChange={handleChangeSendTarget}
             options={[
+              { value: 'clipboard', label: 'Salin + Buka Chat' },
               { value: 'web', label: 'WhatsApp Web' },
               { value: 'app', label: 'Aplikasi WhatsApp' },
             ]}
           />
           <p className="mt-1 text-xs text-gray-400">
-            {sendTarget === 'web'
-              ? 'Emoji aman. Pastikan sudah login di web.whatsapp.com.'
-              : 'Praktis di HP. Di WhatsApp Desktop Windows emoji bisa jadi tanda tanya.'}
+            {sendTarget === 'clipboard' &&
+              'Paling aman. Pesan otomatis tersalin, chat terbuka kosong — tinggal tekan Ctrl+V lalu Enter.'}
+            {sendTarget === 'web' &&
+              'Pesan langsung terisi. Pastikan sudah login di web.whatsapp.com.'}
+            {sendTarget === 'app' &&
+              'Praktis di HP. Di WhatsApp Desktop Windows emoji bisa jadi tanda tanya.'}
           </p>
         </div>
 

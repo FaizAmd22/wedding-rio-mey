@@ -10,16 +10,25 @@ export function isMobileDevice() {
 }
 
 /**
- * `target: 'web'` menuju WhatsApp Web di browser. Ini menghindari serah-terima
- * URL dari Windows ke aplikasi WhatsApp Desktop, yang men-decode teks memakai
- * ANSI codepage sehingga semua emoji berubah jadi karakter `?`.
+ * Emoji rusak jadi `?` ketika Windows menyerahkan URL ke aplikasi WhatsApp
+ * Desktop: teksnya di-decode memakai ANSI codepage, bukan UTF-8. Tiga target
+ * di bawah adalah tiga cara menghindarinya, dari yang paling praktis ke yang
+ * paling aman.
  *
- * `target: 'app'` memakai wa.me, yang membuka aplikasi WhatsApp bila terpasang.
+ * - 'app'       wa.me, membuka aplikasi WhatsApp bila terpasang. Cocok di HP.
+ * - 'web'       WhatsApp Web di browser, melewati serah-terima Windows.
+ * - 'clipboard' Chat dibuka tanpa teks apa pun di URL; pesan lewat clipboard.
+ *               Tidak ada karakter non-ASCII di URL, jadi tidak ada yang bisa
+ *               dirusak. Ini yang paling andal.
  */
 export function buildWhatsAppLink(phone, message, target = 'app') {
   const number = normalizePhone(phone)
-  const text = encodeURIComponent(message)
 
+  if (target === 'clipboard') {
+    return `https://web.whatsapp.com/send?phone=${number}`
+  }
+
+  const text = encodeURIComponent(message)
   if (target === 'web') {
     return `https://web.whatsapp.com/send?phone=${number}&text=${text}`
   }
