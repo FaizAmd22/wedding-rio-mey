@@ -15,6 +15,7 @@ import { Check, Copy, Pencil, Search, Send, Trash2, X } from 'lucide-react'
 import { db } from '../lib/firebase'
 import { buildWhatsAppLink, isMobileDevice } from '../lib/phone'
 import PasswordGate from '../components/PasswordGate'
+import SendDiagnostics from '../components/SendDiagnostics'
 
 const TEMPLATE_DOC = { collection: 'settings', id: 'messageTemplate' }
 
@@ -28,7 +29,7 @@ function loadSendTarget() {
   } catch {
     // localStorage bisa diblokir; pakai default saja
   }
-  return 'clipboard'
+  return IS_MOBILE ? 'app' : 'clipboard'
 }
 
 function saveSendTarget(target) {
@@ -89,9 +90,19 @@ function buildPersonalizedMessage(message, contact) {
 }
 
 /**
- * Sinkron, supaya aman dipanggil tepat sebelum window.open: navigator.clipboard
- * bersifat async dan menolak menulis begitu tab kehilangan fokus ke tab baru.
+ * Dipakai tepat sebelum window.open. Clipboard API didahulukan karena
+ * execCommand sudah deprecated dan gagal diam-diam di Safari iOS; penulisannya
+ * dimulai di dalam user gesture, jadi tetap sah walau promise-nya selesai
+ * setelah tab baru terbuka.
  */
+function copyForSend(text) {
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).catch(() => {})
+    return
+  }
+  copyTextSync(text)
+}
+
 function copyTextSync(text) {
   const area = document.createElement('textarea')
   area.value = text
@@ -354,7 +365,7 @@ function ContactRow({
 
   const handleSend = () => {
     const personalized = buildPersonalizedMessage(message, contact)
-    if (sendTarget === 'clipboard') copyTextSync(personalized)
+    if (sendTarget === 'clipboard') copyForSend(personalized)
     window.open(
       buildWhatsAppLink(contact.phone, personalized, sendTarget),
       '_blank',
@@ -478,7 +489,7 @@ function BroadcastPanel({ queue, index, message, sendTarget, onSent, onSkip, onC
 
   const handleSend = () => {
     const personalized = buildPersonalizedMessage(message, current)
-    if (sendTarget === 'clipboard') copyTextSync(personalized)
+    if (sendTarget === 'clipboard') copyForSend(personalized)
     window.open(
       buildWhatsAppLink(current.phone, personalized, sendTarget),
       '_blank',
@@ -830,12 +841,14 @@ function GuestManager() {
           <p className="mt-1 text-xs text-gray-400">
             {sendTarget === 'clipboard' &&
               (IS_MOBILE
-                ? 'Paling aman. Pesan otomatis tersalin dan aplikasi WhatsApp terbuka ke nomor tujuan — tahan kolom ketik lalu Paste.'
+                ? 'Di HP pesan tetap terisi otomatis, dan salinannya juga masuk clipboard sebagai cadangan.'
                 : 'Paling aman. Pesan otomatis tersalin, chat terbuka kosong — tinggal tekan Ctrl+V lalu Enter.')}
             {sendTarget === 'web' &&
               'Pesan langsung terisi. Pastikan sudah login di web.whatsapp.com.'}
             {sendTarget === 'app' &&
-              'Praktis di HP. Di WhatsApp Desktop Windows emoji bisa jadi tanda tanya.'}
+              (IS_MOBILE
+                ? 'Pesan langsung terisi di aplikasi WhatsApp. Emoji aman di HP.'
+                : 'Di WhatsApp Desktop Windows emoji akan jadi tanda tanya.')}
           </p>
         </div>
 
@@ -887,6 +900,8 @@ function GuestManager() {
           ))}
         </div>
       </div>
+
+      <SendDiagnostics message={message} sendTarget={sendTarget} />
 
       {broadcastQueue && (
         <BroadcastPanel

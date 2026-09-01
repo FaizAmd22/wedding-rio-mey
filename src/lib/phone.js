@@ -17,23 +17,26 @@ export function isMobileDevice() {
  *
  * - 'app'       wa.me, membuka aplikasi WhatsApp bila terpasang. Cocok di HP.
  * - 'web'       WhatsApp Web di browser, melewati serah-terima Windows.
- * - 'clipboard' Chat dibuka tanpa teks apa pun di URL; pesan lewat clipboard.
- *               Karena URL-nya hanya berisi nomor, tidak ada teks yang bisa
- *               dirusak — jadi wa.me aman dipakai di HP untuk membuka
- *               aplikasi langsung ke nomor tujuan. Ini mode paling andal.
+ * - 'clipboard' Di desktop: chat dibuka tanpa teks apa pun di URL, pesan
+ *               dikirim lewat clipboard. Karena URL-nya cuma berisi nomor,
+ *               tidak ada teks yang bisa dirusak.
+ *
+ * Kerusakan emoji hanya terjadi di WhatsApp Desktop Windows. Di HP, wa.me
+ * meneruskan UTF-8 dengan benar, jadi teksnya selalu diikutkan di URL —
+ * termasuk pada mode 'clipboard', supaya pesan tetap terisi kalau penyalinan
+ * ke clipboard ditolak browser (Safari iOS kerap begitu).
  */
 export function buildWhatsAppLink(phone, message, target = 'app') {
   const number = normalizePhone(phone)
 
+  const text = encodeURIComponent(message)
+
   if (target === 'clipboard') {
-    // Di HP, wa.me membuka aplikasi langsung ke chat nomor tujuan. Di desktop,
-    // web.whatsapp.com menghindari halaman perantara "Continue to Chat".
     return isMobileDevice()
-      ? `https://wa.me/${number}`
+      ? `https://wa.me/${number}?text=${text}`
       : `https://web.whatsapp.com/send?phone=${number}`
   }
 
-  const text = encodeURIComponent(message)
   if (target === 'web') {
     return `https://web.whatsapp.com/send?phone=${number}&text=${text}`
   }
