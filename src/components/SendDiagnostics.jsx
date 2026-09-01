@@ -23,7 +23,25 @@ function inspectNonAscii(text) {
   }))
 }
 
-function SendDiagnostics({ message, sendTarget }) {
+/**
+ * In-app browser (WhatsApp, Instagram, Facebook) menyerahkan URL ke aplikasi
+ * lewat jalur yang berbeda dari browser biasa, dan menyimpang sama-sama di
+ * Android maupun iOS. Kalau emoji hanya rusak di sebagian pengirim, ini salah
+ * satu pembeda yang paling mungkin.
+ */
+function detectBrowserContext(agent) {
+  const has = (needle) => agent.includes(needle)
+  if (has('FBAN') || has('FBAV') || has('FB_IAB')) return 'In-app browser Facebook'
+  if (has('Instagram')) return 'In-app browser Instagram'
+  if (has('WhatsApp')) return 'In-app browser WhatsApp'
+  if (has('; wv)')) return 'Android WebView (in-app browser)'
+  if (has('CriOS')) return 'Chrome iOS'
+  if (has('Chrome/')) return 'Chrome'
+  if (has('Safari/')) return 'Safari'
+  return 'Tidak dikenali'
+}
+
+function SendDiagnostics({ message }) {
   const [open, setOpen] = useState(false)
   const [clipboardResult, setClipboardResult] = useState('')
   const [copied, setCopied] = useState(false)
@@ -36,14 +54,16 @@ function SendDiagnostics({ message, sendTarget }) {
   // tidak pernah lolos inspectNonAscii, jadi dihitung terpisah di sini.
   const questionMarks = (message.match(/\?/g) ?? []).length
   const brokenCount = replacementCount + questionMarks
-  const sampleUrl = buildWhatsAppLink('082228152950', message, sendTarget)
+  const sampleUrl = buildWhatsAppLink('082228152950', message)
+  const browserContext = detectBrowserContext(navigator.userAgent)
+  const inAppBrowser = /In-app|WebView/.test(browserContext)
 
   const report = [
     'DIAGNOSTIK KIRIM UNDANGAN',
     'Waktu      : ' + new Date().toISOString(),
     'Perangkat  : ' + (IS_MOBILE ? 'HP' : 'Desktop'),
     'User agent : ' + navigator.userAgent,
-    'Mode kirim : ' + sendTarget,
+    'Browser    : ' + browserContext,
     'Template   : ' +
     message.length +
     ' karakter, ' +
@@ -150,9 +170,17 @@ function SendDiagnostics({ message, sendTarget }) {
             <p className="mb-1 font-medium text-gray-600">Perangkat</p>
             <p className="break-all text-gray-500">{navigator.userAgent}</p>
             <p className="text-gray-500">
-              Terdeteksi: {IS_MOBILE ? 'HP' : 'Desktop'} &bull; Mode kirim:{' '}
-              {sendTarget}
+              Terdeteksi: {IS_MOBILE ? 'HP' : 'Desktop'} &bull; Browser:{' '}
+              {browserContext}
             </p>
+            {inAppBrowser && (
+              <p className="mt-1 rounded-md bg-amber-50 px-2 py-2 text-amber-700">
+                Halaman ini dibuka dari dalam aplikasi lain, bukan browser biasa.
+                In-app browser sering merusak teks saat menyerahkan link ke
+                WhatsApp. Buka lewat Chrome atau Safari langsung: ketuk menu
+                titik tiga di pojok, lalu &quot;Buka di browser&quot;.
+              </p>
+            )}
           </div>
 
           <div>

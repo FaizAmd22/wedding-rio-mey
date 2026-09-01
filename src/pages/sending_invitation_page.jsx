@@ -19,33 +19,7 @@ import SendDiagnostics from '../components/SendDiagnostics'
 
 const TEMPLATE_DOC = { collection: 'settings', id: 'messageTemplate' }
 
-const SEND_TARGET_KEY = 'wedding-rio:send-target'
 const IS_MOBILE = isMobileDevice()
-
-/**
- * Di HP tidak ada yang perlu dipilih: wa.me meneruskan UTF-8 dengan benar, jadi
- * emoji selalu selamat. Di desktop, 'app' (wa.me) menyerahkan URL ke aplikasi
- * WhatsApp Desktop Windows yang merusak emoji, jadi pilihan itu tidak
- * ditawarkan — termasuk kalau sudah terlanjur tersimpan dari versi lama.
- */
-function loadSendTarget() {
-  if (IS_MOBILE) return 'app'
-  try {
-    const stored = localStorage.getItem(SEND_TARGET_KEY)
-    if (stored === 'web' || stored === 'clipboard') return stored
-  } catch {
-    // localStorage bisa diblokir; pakai default saja
-  }
-  return 'clipboard'
-}
-
-function saveSendTarget(target) {
-  try {
-    localStorage.setItem(SEND_TARGET_KEY, target)
-  } catch {
-    // abaikan, pilihan tetap berlaku untuk sesi ini
-  }
-}
 
 const DEFAULT_MESSAGE = `Bismillahirrahmanirrahim
 Assalamu’alaikum Warahmatullahi Wabarakatuh
@@ -97,19 +71,9 @@ function buildPersonalizedMessage(message, contact) {
 }
 
 /**
- * Dipakai tepat sebelum window.open. Clipboard API didahulukan karena
- * execCommand sudah deprecated dan gagal diam-diam di Safari iOS; penulisannya
- * dimulai di dalam user gesture, jadi tetap sah walau promise-nya selesai
- * setelah tab baru terbuka.
+ * Fallback untuk browser tanpa Clipboard API. Safari iOS mengabaikan
+ * textarea.select() biasa, jadi di HP dipakai Range + setSelectionRange.
  */
-function copyForSend(text) {
-  if (navigator.clipboard?.writeText) {
-    navigator.clipboard.writeText(text).catch(() => {})
-    return
-  }
-  copyTextSync(text)
-}
-
 function copyTextSync(text) {
   const area = document.createElement('textarea')
   area.value = text
@@ -366,7 +330,6 @@ function ContactRow({
   contact,
   message,
   templateReady,
-  sendTarget,
   selected,
   onToggleSelect,
   onUpdate,
@@ -384,9 +347,8 @@ function ContactRow({
 
   const handleSend = () => {
     const personalized = buildPersonalizedMessage(message, contact)
-    if (sendTarget === 'clipboard') copyForSend(personalized)
     window.open(
-      buildWhatsAppLink(contact.phone, personalized, sendTarget),
+      buildWhatsAppLink(contact.phone, personalized),
       '_blank',
       'noopener,noreferrer',
     )
@@ -481,7 +443,7 @@ function ContactRow({
   )
 }
 
-function BroadcastPanel({ queue, index, message, sendTarget, onSent, onSkip, onClose }) {
+function BroadcastPanel({ queue, index, message, onSent, onSkip, onClose }) {
   const finished = index >= queue.length
 
   if (finished) {
@@ -508,9 +470,8 @@ function BroadcastPanel({ queue, index, message, sendTarget, onSent, onSkip, onC
 
   const handleSend = () => {
     const personalized = buildPersonalizedMessage(message, current)
-    if (sendTarget === 'clipboard') copyForSend(personalized)
     window.open(
-      buildWhatsAppLink(current.phone, personalized, sendTarget),
+      buildWhatsAppLink(current.phone, personalized),
       '_blank',
       'noopener,noreferrer',
     )
@@ -688,7 +649,6 @@ function GuestManager() {
   const [contacts, setContacts] = useState(null)
   const [template, setTemplate] = useState(null)
   const [templateError, setTemplateError] = useState('')
-  const [sendTarget, setSendTarget] = useState(loadSendTarget)
   const [searchTerm, setSearchTerm] = useState('')
   const [sentFilter, setSentFilter] = useState('all')
   const [selectedIds, setSelectedIds] = useState(() => new Set())
@@ -735,11 +695,6 @@ function GuestManager() {
       return true
     })
   }, [contacts, searchTerm, sentFilter])
-
-  const handleChangeSendTarget = (target) => {
-    setSendTarget(target)
-    saveSendTarget(target)
-  }
 
   const handleSaveTemplate = async (nextMessage) => {
     await setDoc(doc(db, TEMPLATE_DOC.collection, TEMPLATE_DOC.id), {
@@ -864,25 +819,6 @@ function GuestManager() {
           />
         </div>
 
-        {!IS_MOBILE && (
-          <div className="mt-3 rounded-md bg-gray-50 p-2">
-            <p className="mb-1 text-xs font-medium text-gray-600">Kirim lewat</p>
-            <FilterTabs
-              value={sendTarget}
-              onChange={handleChangeSendTarget}
-              options={[
-                { value: 'clipboard', label: 'Salin + Buka Chat' },
-                { value: 'web', label: 'WhatsApp Web' },
-              ]}
-            />
-            <p className="mt-1 text-xs text-gray-400">
-              {sendTarget === 'clipboard'
-                ? 'Emoji dijamin utuh. Pesan otomatis tersalin, chat terbuka kosong — tinggal tekan Ctrl+V lalu Enter.'
-                : 'Pesan langsung terisi. Emoji aman selama tab tidak dialihkan ke aplikasi WhatsApp Desktop.'}
-            </p>
-          </div>
-        )}
-
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-500">
             <input
@@ -922,7 +858,6 @@ function GuestManager() {
               contact={contact}
               message={message}
               templateReady={template !== null}
-              sendTarget={sendTarget}
               selected={selectedIds.has(contact.id)}
               onToggleSelect={toggleSelect}
               onUpdate={handleUpdate}
@@ -932,14 +867,13 @@ function GuestManager() {
         </div>
       </div>
 
-      <SendDiagnostics message={message} sendTarget={sendTarget} />
+      <SendDiagnostics message={message} />
 
       {broadcastQueue && (
         <BroadcastPanel
           queue={broadcastQueue}
           index={broadcastIndex}
           message={message}
-          sendTarget={sendTarget}
           onSent={handleBroadcastSent}
           onSkip={handleBroadcastSkip}
           onClose={closeBroadcast}
