@@ -8,12 +8,35 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
 } from 'firebase/firestore'
 import { Check, Copy, Pencil, Search, Send, Trash2, X } from 'lucide-react'
 import { db } from '../lib/firebase'
-import { buildWhatsAppLink } from '../lib/phone'
+import { buildWhatsAppLink, isMobileDevice } from '../lib/phone'
 import PasswordGate from '../components/PasswordGate'
+
+const TEMPLATE_DOC = { collection: 'settings', id: 'messageTemplate' }
+
+const SEND_TARGET_KEY = 'wedding-rio:send-target'
+
+function loadSendTarget() {
+  try {
+    const stored = localStorage.getItem(SEND_TARGET_KEY)
+    if (stored === 'web' || stored === 'app') return stored
+  } catch {
+    // localStorage bisa diblokir; pakai default saja
+  }
+  return isMobileDevice() ? 'app' : 'web'
+}
+
+function saveSendTarget(target) {
+  try {
+    localStorage.setItem(SEND_TARGET_KEY, target)
+  } catch {
+    // abaikan, pilihan tetap berlaku untuk sesi ini
+  }
+}
 
 const DEFAULT_MESSAGE = `Bismillahirrahmanirrahim
 Assalamu’alaikum Warahmatullahi Wabarakatuh
@@ -82,7 +105,7 @@ async function copyMessage(message, contact) {
   }
 }
 
-function CopyButton({ message, contact, className = '' }) {
+function CopyButton({ message, contact, disabled = false, className = '' }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -96,8 +119,9 @@ function CopyButton({ message, contact, className = '' }) {
     <button
       type="button"
       onClick={handleCopy}
+      disabled={disabled}
       aria-label={`Salin pesan untuk ${contact.name}`}
-      className={className}
+      className={`${className} disabled:cursor-not-allowed disabled:opacity-40`}
     >
       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
     </button>
@@ -280,7 +304,16 @@ function ContactForm({ onAdd }) {
   )
 }
 
-function ContactRow({ contact, message, selected, onToggleSelect, onUpdate, onDelete }) {
+function ContactRow({
+  contact,
+  message,
+  templateReady,
+  sendTarget,
+  selected,
+  onToggleSelect,
+  onUpdate,
+  onDelete,
+}) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(contact.name)
   const [phone, setPhone] = useState(contact.phone)
@@ -293,7 +326,11 @@ function ContactRow({ contact, message, selected, onToggleSelect, onUpdate, onDe
 
   const handleSend = () => {
     const personalized = buildPersonalizedMessage(message, contact)
-    window.open(buildWhatsAppLink(contact.phone, personalized), '_blank', 'noopener,noreferrer')
+    window.open(
+      buildWhatsAppLink(contact.phone, personalized, sendTarget),
+      '_blank',
+      'noopener,noreferrer',
+    )
     onUpdate(contact.id, { sent: true })
   }
 
@@ -352,13 +389,15 @@ function ContactRow({ contact, message, selected, onToggleSelect, onUpdate, onDe
         <CopyButton
           message={message}
           contact={contact}
+          disabled={!templateReady}
           className="cursor-pointer p-2 text-gray-500 hover:text-gray-800"
         />
         <button
           type="button"
           onClick={handleSend}
+          disabled={!templateReady}
           aria-label={`Kirim WA ke ${contact.name}`}
-          className="cursor-pointer rounded-full bg-green-500 p-2 text-white hover:bg-green-600"
+          className="cursor-pointer rounded-full bg-green-500 p-2 text-white hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Send className="h-4 w-4" />
         </button>
@@ -383,7 +422,7 @@ function ContactRow({ contact, message, selected, onToggleSelect, onUpdate, onDe
   )
 }
 
-function BroadcastPanel({ queue, index, message, onSent, onSkip, onClose }) {
+function BroadcastPanel({ queue, index, message, sendTarget, onSent, onSkip, onClose }) {
   const finished = index >= queue.length
 
   if (finished) {
@@ -410,7 +449,11 @@ function BroadcastPanel({ queue, index, message, onSent, onSkip, onClose }) {
 
   const handleSend = () => {
     const personalized = buildPersonalizedMessage(message, current)
-    window.open(buildWhatsAppLink(current.phone, personalized), '_blank', 'noopener,noreferrer')
+    window.open(
+      buildWhatsAppLink(current.phone, personalized, sendTarget),
+      '_blank',
+      'noopener,noreferrer',
+    )
     onSent(current.id)
   }
 
@@ -458,14 +501,141 @@ function BroadcastPanel({ queue, index, message, onSent, onSkip, onClose }) {
   )
 }
 
+function MessageTemplate({ message, loading, loadError, onSave }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(message)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleEdit = () => {
+    setDraft(message)
+    setError('')
+    setEditing(true)
+  }
+
+  const handleCancel = () => {
+    setDraft(message)
+    setError('')
+    setEditing(false)
+  }
+
+  const handleSave = async () => {
+    if (saving || !draft.trim()) return
+    setSaving(true)
+    setError('')
+    try {
+      await onSave(draft)
+      setEditing(false)
+    } catch (err) {
+      console.error('Gagal menyimpan template pesan:', err)
+      setError(
+        err.code === 'permission-denied'
+          ? 'Firestore menolak penyimpanan. Perbarui Firestore Rules agar collection "settings" bisa ditulis.'
+          : `Gagal menyimpan template (${err.code ?? 'unknown'}). Periksa koneksi lalu coba lagi.`,
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-base font-semibold text-gray-800">Template Pesan</p>
+
+        {editing ? (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={saving}
+              className="cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || !draft.trim()}
+              className="cursor-pointer rounded-md bg-gray-900 px-3 py-1 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {saving ? 'Menyimpan...' : 'Simpan'}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleEdit}
+            disabled={loading}
+            className="flex cursor-pointer items-center gap-1 rounded-md bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Pencil className="h-3 w-3" />
+            Edit
+          </button>
+        )}
+      </div>
+
+      <textarea
+        value={editing ? draft : message}
+        onChange={(event) => setDraft(event.target.value)}
+        readOnly={!editing}
+        rows={12}
+        className={`w-full rounded-md border p-3 text-sm outline-none ${
+          editing
+            ? 'border-gray-300 focus:border-gray-500'
+            : 'border-gray-200 bg-gray-50 text-gray-600'
+        }`}
+      />
+
+      {loadError && (
+        <p className="mt-1 rounded-md bg-red-50 px-2 py-1 text-xs text-red-600">
+          {loadError}
+        </p>
+      )}
+      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+
+      {loading ? (
+        <p className="mt-1 text-xs text-gray-400">Memuat template...</p>
+      ) : (
+        <p className="mt-1 text-xs text-gray-400">
+          Gunakan <code>{'{nama}'}</code> untuk nama tamu dan{' '}
+          <code>{'{link}'}</code> untuk link undangan personal.
+        </p>
+      )}
+    </div>
+  )
+}
+
 function GuestManager() {
   const [contacts, setContacts] = useState(null)
-  const [message, setMessage] = useState(DEFAULT_MESSAGE)
+  const [template, setTemplate] = useState(null)
+  const [templateError, setTemplateError] = useState('')
+  const [sendTarget, setSendTarget] = useState(loadSendTarget)
   const [searchTerm, setSearchTerm] = useState('')
   const [sentFilter, setSentFilter] = useState('all')
   const [selectedIds, setSelectedIds] = useState(() => new Set())
   const [broadcastQueue, setBroadcastQueue] = useState(null)
   const [broadcastIndex, setBroadcastIndex] = useState(0)
+
+  useEffect(() => {
+    const templateRef = doc(db, TEMPLATE_DOC.collection, TEMPLATE_DOC.id)
+    return onSnapshot(
+      templateRef,
+      (snapshot) => {
+        setTemplate(snapshot.data()?.message ?? DEFAULT_MESSAGE)
+        setTemplateError('')
+      },
+      (error) => {
+        console.error('Gagal memuat template pesan:', error)
+        setTemplate(DEFAULT_MESSAGE)
+        setTemplateError(
+          error.code === 'permission-denied'
+            ? `Firestore menolak akses ke "${TEMPLATE_DOC.collection}/${TEMPLATE_DOC.id}". Perbarui Firestore Rules untuk collection "${TEMPLATE_DOC.collection}". Yang tampil di bawah adalah template bawaan, bukan yang tersimpan.`
+            : `Gagal memuat template (${error.code}). Yang tampil di bawah adalah template bawaan, bukan yang tersimpan.`,
+        )
+      },
+    )
+  }, [])
 
   useEffect(() => {
     const guestsQuery = query(collection(db, 'guests'), orderBy('createdAt', 'desc'))
@@ -487,6 +657,18 @@ function GuestManager() {
       return true
     })
   }, [contacts, searchTerm, sentFilter])
+
+  const handleChangeSendTarget = (target) => {
+    setSendTarget(target)
+    saveSendTarget(target)
+  }
+
+  const handleSaveTemplate = async (nextMessage) => {
+    await setDoc(doc(db, TEMPLATE_DOC.collection, TEMPLATE_DOC.id), {
+      message: nextMessage,
+      updatedAt: serverTimestamp(),
+    })
+  }
 
   const handleAdd = async ({ name, phone }) => {
     await addDoc(collection(db, 'guests'), {
@@ -538,7 +720,7 @@ function GuestManager() {
   }
 
   const startBroadcast = () => {
-    if (!contacts) return
+    if (!contacts || template === null) return
     const queue = contacts.filter((c) => selectedIds.has(c.id))
     if (queue.length === 0) return
     setBroadcastQueue(queue)
@@ -561,24 +743,16 @@ function GuestManager() {
   }
 
   const sentCount = contacts?.filter((c) => c.sent).length ?? 0
+  const message = template ?? DEFAULT_MESSAGE
 
   return (
     <section className="flex flex-col gap-4 rounded-xl bg-white p-4 shadow-sm sm:p-5">
-      <div>
-        <p className="mb-2 text-base font-semibold text-gray-800">
-          Template Pesan
-        </p>
-        <textarea
-          value={message}
-          onChange={(event) => setMessage(event.target.value)}
-          rows={6}
-          className="w-full rounded-md border border-gray-300 p-3 text-sm outline-none focus:border-gray-500"
-        />
-        <p className="mt-1 text-xs text-gray-400">
-          Gunakan <code>{'{nama}'}</code> untuk nama tamu dan{' '}
-          <code>{'{link}'}</code> untuk link undangan personal.
-        </p>
-      </div>
+      <MessageTemplate
+        message={message}
+        loading={template === null}
+        loadError={templateError}
+        onSave={handleSaveTemplate}
+      />
 
       <div>
         <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
@@ -612,6 +786,23 @@ function GuestManager() {
           />
         </div>
 
+        <div className="mt-3 rounded-md bg-gray-50 p-2">
+          <p className="mb-1 text-xs font-medium text-gray-600">Kirim lewat</p>
+          <FilterTabs
+            value={sendTarget}
+            onChange={handleChangeSendTarget}
+            options={[
+              { value: 'web', label: 'WhatsApp Web' },
+              { value: 'app', label: 'Aplikasi WhatsApp' },
+            ]}
+          />
+          <p className="mt-1 text-xs text-gray-400">
+            {sendTarget === 'web'
+              ? 'Emoji aman. Pastikan sudah login di web.whatsapp.com.'
+              : 'Praktis di HP. Di WhatsApp Desktop Windows emoji bisa jadi tanda tanya.'}
+          </p>
+        </div>
+
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-500">
             <input
@@ -627,7 +818,7 @@ function GuestManager() {
           <button
             type="button"
             onClick={startBroadcast}
-            disabled={selectedIds.size === 0}
+            disabled={selectedIds.size === 0 || template === null}
             className="cursor-pointer rounded-md bg-green-500 px-4 py-2 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
             Kirim ke Terpilih ({selectedIds.size})
@@ -650,6 +841,8 @@ function GuestManager() {
               key={contact.id}
               contact={contact}
               message={message}
+              templateReady={template !== null}
+              sendTarget={sendTarget}
               selected={selectedIds.has(contact.id)}
               onToggleSelect={toggleSelect}
               onUpdate={handleUpdate}
@@ -664,6 +857,7 @@ function GuestManager() {
           queue={broadcastQueue}
           index={broadcastIndex}
           message={message}
+          sendTarget={sendTarget}
           onSent={handleBroadcastSent}
           onSkip={handleBroadcastSkip}
           onClose={closeBroadcast}
