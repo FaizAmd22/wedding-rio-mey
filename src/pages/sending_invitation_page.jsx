@@ -10,21 +10,38 @@ import {
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore'
-import { Check, Pencil, Search, Send, Trash2, X } from 'lucide-react'
+import { Check, Copy, Pencil, Search, Send, Trash2, X } from 'lucide-react'
 import { db } from '../lib/firebase'
 import { buildWhatsAppLink } from '../lib/phone'
 import PasswordGate from '../components/PasswordGate'
 
-const DEFAULT_MESSAGE = `Halo {nama} 🌸
+const DEFAULT_MESSAGE = `Bismillahirrahmanirrahim
+Assalamu’alaikum Warahmatullahi Wabarakatuh
 
-Dengan penuh sukacita, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di pernikahan kami.
+Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i {nama} untuk hadir dan memberikan doa restu pada acara pernikahan kami:
 
-Berikut link undangannya:
-{link}
+RISMA MELIANI (MEY) & RIO RIZKI GIOFANI
 
-Mohon doa restu & kehadirannya 🙏
+Acara akan dilaksanakan pada:
+📅 Tanggal: Sabtu, 12 September 2026
+⏰ Waktu
+• Akad : 16.00 WIB
+• Resepsi : 18:30 WIB
 
-Rio & Mey`
+📍 Lokasi: Samoja Coffee
+Jatipamor, Kec. Panyingkiran, Kabupaten Majalengka, Jawa Barat 45459
+
+Untuk detail acara dan peta lokasi, Bapak/Ibu/Saudara/i dapat mengakses tautan undangan digital berikut:
+👉 {link}
+
+Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu secara langsung.
+
+Terima kasih atas perhatian dan doa baiknya.
+
+Wassalamu’alaikum Warahmatullahi Wabarakatuh
+
+Keluarga Besar:
+Memey & Rio`
 
 function formatRsvpDate(timestamp) {
   if (!timestamp) return '-'
@@ -45,6 +62,46 @@ function buildPersonalizedMessage(message, contact) {
   return message
     .replaceAll('{nama}', contact.name)
     .replaceAll('{link}', buildInvitationLink(contact.name))
+}
+
+async function copyMessage(message, contact) {
+  const text = buildPersonalizedMessage(message, contact)
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    const area = document.createElement('textarea')
+    area.value = text
+    area.style.position = 'fixed'
+    area.style.opacity = '0'
+    document.body.appendChild(area)
+    area.select()
+    const ok = document.execCommand('copy')
+    document.body.removeChild(area)
+    return ok
+  }
+}
+
+function CopyButton({ message, contact, className = '' }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    if (await copyMessage(message, contact)) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      aria-label={`Salin pesan untuk ${contact.name}`}
+      className={className}
+    >
+      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+    </button>
+  )
 }
 
 function FilterTabs({ value, onChange, options }) {
@@ -292,6 +349,11 @@ function ContactRow({ contact, message, selected, onToggleSelect, onUpdate, onDe
         </span>
       )}
       <div className="flex shrink-0 items-center gap-1">
+        <CopyButton
+          message={message}
+          contact={contact}
+          className="cursor-pointer p-2 text-gray-500 hover:text-gray-800"
+        />
         <button
           type="button"
           onClick={handleSend}
@@ -364,6 +426,11 @@ function BroadcastPanel({ queue, index, message, onSent, onSkip, onClose }) {
         <p className="text-sm text-gray-500">{current.phone}</p>
 
         <div className="mt-4 flex gap-2">
+          <CopyButton
+            message={message}
+            contact={current}
+            className="flex cursor-pointer items-center justify-center rounded-md border border-gray-300 px-3 py-2 text-gray-600"
+          />
           <button
             type="button"
             onClick={onSkip}
