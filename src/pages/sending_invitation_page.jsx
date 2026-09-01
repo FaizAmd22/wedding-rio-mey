@@ -22,14 +22,21 @@ const TEMPLATE_DOC = { collection: 'settings', id: 'messageTemplate' }
 const SEND_TARGET_KEY = 'wedding-rio:send-target'
 const IS_MOBILE = isMobileDevice()
 
+/**
+ * Di HP tidak ada yang perlu dipilih: wa.me meneruskan UTF-8 dengan benar, jadi
+ * emoji selalu selamat. Di desktop, 'app' (wa.me) menyerahkan URL ke aplikasi
+ * WhatsApp Desktop Windows yang merusak emoji, jadi pilihan itu tidak
+ * ditawarkan — termasuk kalau sudah terlanjur tersimpan dari versi lama.
+ */
 function loadSendTarget() {
+  if (IS_MOBILE) return 'app'
   try {
     const stored = localStorage.getItem(SEND_TARGET_KEY)
-    if (stored === 'web' || stored === 'app' || stored === 'clipboard') return stored
+    if (stored === 'web' || stored === 'clipboard') return stored
   } catch {
     // localStorage bisa diblokir; pakai default saja
   }
-  return IS_MOBILE ? 'app' : 'clipboard'
+  return 'clipboard'
 }
 
 function saveSendTarget(target) {
@@ -144,14 +151,17 @@ async function copyMessage(message, contact) {
   }
 }
 
+/**
+ * Safari iOS kerap menolak penulisan clipboard. Kegagalannya harus terlihat:
+ * kalau ikonnya diam saja, pengguna mengira pesan sudah tersalin padahal belum.
+ */
 function CopyButton({ message, contact, disabled = false, className = '' }) {
-  const [copied, setCopied] = useState(false)
+  const [status, setStatus] = useState('idle')
 
   const handleCopy = async () => {
-    if (await copyMessage(message, contact)) {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
-    }
+    const ok = await copyMessage(message, contact)
+    setStatus(ok ? 'copied' : 'failed')
+    setTimeout(() => setStatus('idle'), ok ? 1500 : 4000)
   }
 
   return (
@@ -159,10 +169,19 @@ function CopyButton({ message, contact, disabled = false, className = '' }) {
       type="button"
       onClick={handleCopy}
       disabled={disabled}
+      title={
+        status === 'failed'
+          ? 'Browser menolak menyalin. Tekan lama pesannya lalu salin manual.'
+          : `Salin pesan untuk ${contact.name}`
+      }
       aria-label={`Salin pesan untuk ${contact.name}`}
-      className={`${className} disabled:cursor-not-allowed disabled:opacity-40`}
+      className={`${className} disabled:cursor-not-allowed disabled:opacity-40 ${
+        status === 'failed' ? 'text-red-500' : ''
+      }`}
     >
-      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+      {status === 'copied' && <Check className="h-4 w-4" />}
+      {status === 'failed' && <X className="h-4 w-4" />}
+      {status === 'idle' && <Copy className="h-4 w-4" />}
     </button>
   )
 }
@@ -542,6 +561,15 @@ function BroadcastPanel({ queue, index, message, sendTarget, onSent, onSkip, onC
   )
 }
 
+/**
+ * Template ini satu dokumen yang dipakai semua pengirim, jadi sekali tersimpan
+ * dalam keadaan rusak, semua orang ikut kena. Kasus paling umum: emoji disalin
+ * dari chat WhatsApp yang sudah menampilkan tanda tanya.
+ */
+function countBrokenChars(text) {
+  return (text.match(/\uFFFD/g) ?? []).length
+}
+
 function MessageTemplate({ message, loading, loadError, onSave }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(message)
@@ -560,8 +588,10 @@ function MessageTemplate({ message, loading, loadError, onSave }) {
     setEditing(false)
   }
 
+  const brokenChars = countBrokenChars(draft)
+
   const handleSave = async () => {
-    if (saving || !draft.trim()) return
+    if (saving || !draft.trim() || brokenChars > 0) return
     setSaving(true)
     setError('')
     try {
@@ -597,7 +627,7 @@ function MessageTemplate({ message, loading, loadError, onSave }) {
             <button
               type="button"
               onClick={handleSave}
-              disabled={saving || !draft.trim()}
+              disabled={saving || !draft.trim() || brokenChars > 0}
               className="cursor-pointer rounded-md bg-gray-900 px-3 py-1 text-xs font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving ? 'Menyimpan...' : 'Simpan'}
@@ -628,6 +658,13 @@ function MessageTemplate({ message, loading, loadError, onSave }) {
         }`}
       />
 
+      {editing && brokenChars > 0 && (
+        <p className="mt-1 rounded-md bg-red-50 px-2 py-1 text-xs text-red-600">
+          Ada {brokenChars} karakter rusak di template ini. Kemungkinan besar
+          emoji-nya disalin dari chat WhatsApp yang sudah rusak. Hapus lalu ketik
+          ulang emoji-nya langsung dari keyboard emoji, baru bisa disimpan.
+        </p>
+      )}
       {loadError && (
         <p className="mt-1 rounded-md bg-red-50 px-2 py-1 text-xs text-red-600">
           {loadError}
@@ -827,30 +864,24 @@ function GuestManager() {
           />
         </div>
 
-        <div className="mt-3 rounded-md bg-gray-50 p-2">
-          <p className="mb-1 text-xs font-medium text-gray-600">Kirim lewat</p>
-          <FilterTabs
-            value={sendTarget}
-            onChange={handleChangeSendTarget}
-            options={[
-              { value: 'clipboard', label: 'Salin + Buka Chat' },
-              { value: 'web', label: 'WhatsApp Web' },
-              { value: 'app', label: 'Aplikasi WhatsApp' },
-            ]}
-          />
-          <p className="mt-1 text-xs text-gray-400">
-            {sendTarget === 'clipboard' &&
-              (IS_MOBILE
-                ? 'Di HP pesan tetap terisi otomatis, dan salinannya juga masuk clipboard sebagai cadangan.'
-                : 'Paling aman. Pesan otomatis tersalin, chat terbuka kosong — tinggal tekan Ctrl+V lalu Enter.')}
-            {sendTarget === 'web' &&
-              'Pesan langsung terisi. Pastikan sudah login di web.whatsapp.com.'}
-            {sendTarget === 'app' &&
-              (IS_MOBILE
-                ? 'Pesan langsung terisi di aplikasi WhatsApp. Emoji aman di HP.'
-                : 'Di WhatsApp Desktop Windows emoji akan jadi tanda tanya.')}
-          </p>
-        </div>
+        {!IS_MOBILE && (
+          <div className="mt-3 rounded-md bg-gray-50 p-2">
+            <p className="mb-1 text-xs font-medium text-gray-600">Kirim lewat</p>
+            <FilterTabs
+              value={sendTarget}
+              onChange={handleChangeSendTarget}
+              options={[
+                { value: 'clipboard', label: 'Salin + Buka Chat' },
+                { value: 'web', label: 'WhatsApp Web' },
+              ]}
+            />
+            <p className="mt-1 text-xs text-gray-400">
+              {sendTarget === 'clipboard'
+                ? 'Emoji dijamin utuh. Pesan otomatis tersalin, chat terbuka kosong — tinggal tekan Ctrl+V lalu Enter.'
+                : 'Pesan langsung terisi. Emoji aman selama tab tidak dialihkan ke aplikasi WhatsApp Desktop.'}
+            </p>
+          </div>
+        )}
 
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
           <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-500">
